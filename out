@@ -1,0 +1,32 @@
+
+p.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	b8 01 00 00 00       	mov    $0x1,%eax
+   5:	bb 00 00 00 00       	mov    $0x0,%ebx
+   a:	cd 80                	int    $0x80
+   c:	c3                   	ret
+
+Disassembly of section .comment:
+
+0000000000000000 <.comment>:
+   0:	00 55 62             	add    %dl,0x62(%rbp)
+   3:	75 6e                	jne    73 <_start+0x73>
+   5:	74 75                	je     7c <_start+0x7c>
+   7:	20 63 6c             	and    %ah,0x6c(%rbx)
+   a:	61                   	(bad)
+   b:	6e                   	outsb  %ds:(%rsi),(%dx)
+   c:	67 20 76 65          	and    %dh,0x65(%esi)
+  10:	72 73                	jb     85 <_start+0x85>
+  12:	69 6f 6e 20 31 38 2e 	imul   $0x2e383120,0x6e(%rdi),%ebp
+  19:	31 2e                	xor    %ebp,(%rsi)
+  1b:	33 20                	xor    (%rax),%esp
+  1d:	28 31                	sub    %dh,(%rcx)
+  1f:	75 62                	jne    83 <_start+0x83>
+  21:	75 6e                	jne    91 <_start+0x91>
+  23:	74 75                	je     9a <_start+0x9a>
+  25:	31 29                	xor    %ebp,(%rcx)
+	...
