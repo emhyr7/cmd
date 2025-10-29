@@ -52,12 +52,12 @@ typedef L    A     ; // address
 
 #define COMMAND_SIZE_MAX ( 1 << 13 ) // 8192 byte
 
-#define OPTION_INDEX_MAX_LOG2  ( 13 )
-#define OPTION_TYPE_COUNT_LOG2 (  3 )
+#define OPTION_TYPE_COUNT_LOG2    ( 3 )
+#define OPTION_NAME_SIZE_MAX_LOG2 ( 5 )
 
-#define OPTION_NAME_SIZE_MAX ( 1 << 5                      ) //  32 byte
-#define OPTION_COUNT_MAX     ( 1 << 8                      ) // 256 option
-#define OPTION_TYPE_COUNT    ( 1 << OPTION_TYPE_COUNT_LOG2 ) //   4 type
+#define OPTION_NAME_SIZE_MAX ( 1 << OPTION_NAME_SIZE_MAX_LOG2 ) //  32 byte
+#define OPTION_COUNT_MAX     ( 1 << 8                         ) // 256 option
+#define OPTION_TYPE_COUNT    ( 1 << OPTION_TYPE_COUNT_LOG2    ) //   4 type
 
 #define OPTION_TYPE_U ( 0 ) // 64-bit unsigned integer
 #define OPTION_TYPE_S ( 1 ) // 64-bit signed integer
