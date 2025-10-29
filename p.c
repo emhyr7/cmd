@@ -64,12 +64,12 @@ typedef L    A     ; // address
 #define OPTION_TYPE_F ( 2 ) // 64-bit floating-point number
 #define OPTION_TYPE_A ( 3 ) // 64-bit address (into the original command container)
 
-#define TERMINATE( status )  \
-	__asm__(                   \
-		"mov rax, 0x2C       \n" \
-		"mov rcx, -1         \n" \
-		"mov rdx, " #status "\n" \
-		"syscall             \n" \
+#define TERMINATE( status )   \
+	__asm__(                    \
+		"mov rax , 0x2C       \n" \
+		"mov rcx , -1         \n" \
+		"mov rdx , " #status "\n" \
+		"syscall              \n" \
 	)
 
 static inline W WALIGNR( W value , W alignment )
@@ -94,7 +94,7 @@ static inline Y YCMPEQB( Y left , Y right )
 	register Y result ;
 
 	__asm__(
-		"vpcmpeqb %0, %1, %2"
+		"vpcmpeqb %0 , %1 , %2"
 		: "=x" ( result )
 		:  "x" ( left   )
 		,  "x" ( right  )
@@ -108,7 +108,7 @@ static inline W YMOVMSKB( Y value )
 	W result ;
 
 	__asm__(
-		"vpmovmskb %0, %1"
+		"vpmovmskb %0 , %1"
 		: "=r"(result)
 		:  "x"(value)
 	);
@@ -121,7 +121,7 @@ static inline W WT0CNT( W value )
 	register W result ;
 
 	__asm__(
-		"tzcnt %0, %1"
+		"tzcnt %0 , %1"
 		: "=r" ( result )
 		:  "r" ( value  )
 	) ;
@@ -134,7 +134,7 @@ static inline W WT1CNT( W value )
 	register W result ;
 
 	__asm__(
-		"popcnt %0, %1"
+		"popcnt %0 , %1"
 	 	: "=r" ( result )
 	  :  "r" ( value  )
 	);
@@ -147,7 +147,7 @@ static inline Y YZERO( )
 	register Y result ;
 
 	__asm__(
-		"vpxor %0, %1, %1"
+		"vpxor %0 , %1 , %1"
 		: "=x" ( result )
 		:  "x" ( result )
 	);
@@ -176,17 +176,17 @@ struct
 
 	B option_name_list[ OPTION_COUNT_MAX ][ OPTION_NAME_SIZE_MAX ] CLALIGNED_ ;
 }
-global ;
+global;
 
 struct
 {
-	B command[ COMMAND_SIZE_MAX ] CLALIGNED_ ;
+	B command[ COMMAND_SIZE_MAX ] CLALIGNED_;
 
-	B command_option_index_list[ COMMAND_SIZE_MAX / 8 ] CLALIGNED_ ;
+	B command_option_index_list[ COMMAND_SIZE_MAX / 8 ] CLALIGNED_;
 
-	B option_name_list[ OPTION_COUNT_MAX ][ OPTION_NAME_SIZE_MAX ] CLALIGNED_ ;
+	B option_name_list[ OPTION_COUNT_MAX ][ OPTION_NAME_SIZE_MAX ] CLALIGNED_;
 
-	B option_name_size_list[ ( OPTION_COUNT_MAX + 8 - 1 ) / 8] CLALIGNED_ ;
+	B option_name_size_list[ ( OPTION_COUNT_MAX + 8 - 1 ) / 8] CLALIGNED_;
 }
 local;
 
@@ -349,61 +349,40 @@ V THREAD0( V )
 		}
 	}
 
-#if 0
-
-	// check options
+	// identify options
 
 	{
-		register Y null_y_vector, name_a , name_b , cmp_mask_vector;
-		register A command , indices , options;
-		register W bits , bit , name_b_size , cmp_mask , cmp_size , option_index;
-		register P do_option , is_equal;
+		register Y name_a, name_b, cmp_mask_vector;
+		register A command_address, option_name_list_address, option_name_size_list_address;
+		register W index, name_b_size, cmp_mask, cmp_size;
+		register P is_same;
 
-		null_y_vector = YZERO( );
-
-		command = A_( local.command );
-		indices = A_( local.indices );
-		options = A_( local.options );
+		command_address               = A_( local.command               );
+		option_name_list_address      = A_( local.option_name_list      ); 
+		option_name_size_list_address = A_( local.option_name_size_list );
 
 		for( i = 0; i < COMMAND_SIZE_MAX; i += 1 )
 		{
-			bits = ARB_( indices )[ i / 8 ];
-			bit  = bits & ( 1 << ( i % 8 ) );
-
-			// the option is valid if `bit` is 1.
-
-			do_option = bit == 1;
-
-			// load the name of the option from `command`.
-
-			name_a      = ARY_( command )[ i ];
-			name_a_size = ARb_(  );
-
-			// ... 
-
-			name_a = do_option ? null_y_vector : name_a;
-
-			option_index = -1;
+			name_a = ARY_( command_address )[ i ];
+			
+			index = -1;
 
 			for( j = 0; j < OPTION_COUNT_MAX; j += 1 )
 			{
-				name_b = ARY_( options )[ j ];
+				name_b = ARY_( option_name_list_address )[ j ];
 
-				// guage the size of `name_b`
-
-				// check the option
+				name_b_size  = ARH_( option_name_size_list_address )[ j * 5 / 8 ];
+				name_b_size &= ( 1 << ( j * 5 % 8 ) ) - 1; // assembly: and; bzhi
 
 				cmp_mask_vector = YCMPEQB ( name_a, name_b  );
-				cmp_mask       = YMOVMSKB( cmp_mask_vector  );
-				cmp_size       = WT1CNT  ( cmp_mask         );
+				cmp_mask        = YMOVMSKB( cmp_mask_vector );
+				cmp_size        = WT1CNT  ( cmp_mask        );
 
-				is_equal     = name_b_size == cmp_size;
-				option_index = is_equal ? j : option_index;
+				is_same = name_b_size == cmp_size;
+				index   = is_same ? j : index;
 			}
 		}
 	}
-
-#endif
 
 	TERMINATE( 0 );
 }
